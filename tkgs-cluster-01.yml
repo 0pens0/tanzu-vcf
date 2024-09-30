@@ -1,0 +1,44 @@
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: Cluster
+metadata:
+  name: tkgs-cluster-01
+spec:
+  clusterNetwork:
+    services:
+      cidrBlocks: ["192.168.21.0/24"]
+    pods:
+      cidrBlocks: ["100.100.0.0/20"]
+    serviceDomain: "sfo.rainpole.io"
+  topology:
+    class: tanzukubernetescluster
+    version: v1.29.4---vmware.3-fips.1-tkg.1
+    controlPlane:
+      replicas: 3
+    workers:
+      machineDeployments:
+        - class: node-pool
+          name: node-pool-1
+          replicas: 3
+          variables:
+            overrides:
+            - name: vmClass
+              value: guaranteed-xlarge
+    variables:
+      - name: vmClass
+        value: guaranteed-medium
+      - name: storageClass
+        value: vsphere-with-tanzu-storage-policy
+      - name: defaultStorageClass
+        value: vsphere-with-tanzu-storage-policy
+      - name: nodePoolVolumes
+        value:
+          - name: containerd
+            capacity:
+              storage: 50Gi
+            mountPath: /var/lib/containerd
+            storageClass: vsphere-with-tanzu-storage-policy
+          - name: kubelet
+            capacity:
+              storage: 50Gi
+            mountPath: /var/lib/kubelet
+            storageClass: vsphere-with-tanzu-storage-policy
